@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  --color-bg: oklch(0.08 0 0);
+  --color-surface: oklch(0.12 0 0);
+  --color-surface-hover: oklch(0.16 0 0);
+  --color-primary: oklch(0.68 0.15 145);
+  --color-primary-hover: oklch(0.72 0.15 145);
+  --color-primary-muted: oklch(0.28 0.08 145);
+  --color-accent: oklch(0.60 0.16 260);
+  --color-accent-hover: oklch(0.64 0.16 260);
+  --color-ink: oklch(0.93 0 0);
+  --color-muted: oklch(0.65 0 0);
+  --color-border: oklch(0.20 0 0);
+  --color-ring: oklch(0.68 0.15 145 / 0.5);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-up,
+.animate-fade-in,
+.stagger-item {
+  /* visible by default — animation enhances, never gates */
+}
+
+.animate-fade-in-up.is-visible {
+  animation: fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in.is-visible {
+  animation: fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger-item.is-visible {
+  animation: fade-in-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up.is-visible,
+  .animate-fade-in.is-visible,
+  .stagger-item.is-visible {
+    animation: none;
+  }
 }
