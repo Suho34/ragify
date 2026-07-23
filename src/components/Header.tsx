@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const navLinks = [
@@ -22,13 +23,18 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-out ${
-        scrolled ? "bg-bg/80 backdrop-blur-md shadow-[0_1px_0_var(--color-border)]" : "bg-transparent"
+        scrolled
+          ? "bg-bg/80 backdrop-blur-md shadow-[0_1px_0_var(--color-border)]"
+          : "bg-transparent"
       }`}
     >
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <a href="/" className="text-lg font-semibold tracking-tight text-ink">
+        <Link
+          href="/"
+          className="text-lg font-semibold tracking-tight text-ink"
+        >
           RAGify
-        </a>
+        </Link>
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -36,11 +42,20 @@ export default function Header() {
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className="h-5 w-5"
+          >
             {mobileOpen ? (
               <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
             ) : (
-              <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" strokeLinecap="round" />
+              <path
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                strokeLinecap="round"
+              />
             )}
           </svg>
         </button>
