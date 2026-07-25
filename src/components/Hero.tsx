@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Reveal from "./Reveal";
 
 export default function Hero() {
@@ -27,18 +28,18 @@ export default function Hero() {
 
         <Reveal delay={550}>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-            <a
+            <Link
               href="/login"
               className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-sm font-medium text-black transition-all duration-200 ease-out hover:bg-primary-hover hover:scale-[1.02]"
             >
               Try it now
-            </a>
-            <a
+            </Link>
+            <Link
               href="#features"
               className="inline-flex h-12 items-center justify-center rounded-lg border border-border px-8 text-sm font-medium text-ink transition-all duration-200 ease-out hover:bg-surface"
             >
               See how it works
-            </a>
+            </Link>
           </div>
         </Reveal>
       </div>

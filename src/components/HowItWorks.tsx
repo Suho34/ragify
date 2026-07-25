@@ -2,19 +2,16 @@ import Reveal from "./Reveal";
 
 const steps = [
   {
-    number: "01",
     title: "Upload a document",
-    description: "Drop a PDF, DOCX, or TXT file. RAGify indexes it instantly — no waiting, no processing bars.",
+    description: "Drop a PDF, DOCX, or TXT file. RAGify extracts text, chunks it, and embeds it for search — all in seconds.",
   },
   {
-    number: "02",
-    title: "Ask anything",
-    description: "Type questions in natural language. Every answer is grounded in your document, not a generic AI guess.",
+    title: "Pick documents to chat with",
+    description: "Select one document or combine several into a single chat room. Ask across all of them at once.",
   },
   {
-    number: "03",
-    title: "Share the conversation",
-    description: "Generate a link. Friends join the chat room and see the same context — ask questions together in real time.",
+    title: "Invite — no account needed",
+    description: "Share the room link. Guests join instantly and can ask questions alongside you. Only you manage documents.",
   },
 ];
 
@@ -33,10 +30,12 @@ export default function HowItWorks() {
 
         <div className="grid gap-8 md:grid-cols-3 md:gap-12">
           {steps.map((step, i) => (
-            <Reveal key={step.number} delay={i * 150}>
-              <div className="flex flex-col items-center text-center">
-                <span className="text-5xl font-extralight text-primary/40">{step.number}</span>
-                <div className="mt-4 h-px w-12 bg-primary/30" />
+            <Reveal key={step.title} delay={i * 150}>
+              <div className="group flex flex-col items-center text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-muted text-lg font-semibold text-primary transition-all duration-300 ease-out group-hover:scale-105 group-hover:shadow-[0_0_20px_-4px] group-hover:shadow-primary/30">
+                  {i + 1}
+                </div>
+                <div className="mt-4 h-px w-12 bg-primary/30 transition-all duration-300 group-hover:w-16" />
                 <h3 className="mt-6 text-lg font-medium text-ink">{step.title}</h3>
                 <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">{step.description}</p>
               </div>

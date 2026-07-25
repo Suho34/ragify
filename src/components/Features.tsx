@@ -12,6 +12,24 @@ const features = [
     ),
   },
   {
+    title: "Cross-Document Chat",
+    description: "Select multiple documents and ask across all of them at once. RAG searches every linked doc so you get answers from your entire knowledge base.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-primary" aria-hidden="true">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "Document Insights",
+    description: "Click any document to see word count, reading time, file size, and processing status — all at a glance. A quick stats panel without leaving the dashboard.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-primary" aria-hidden="true">
+        <path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     title: "Chat with RAG Accuracy",
     description: "Get precise answers grounded in your documents. No generic AI guesses — every response is sourced from what you uploaded.",
     icon: (
@@ -21,8 +39,8 @@ const features = [
     ),
   },
   {
-    title: "Share Chat Rooms",
-    description: "Generate a link and invite friends to chat about documents together. Everyone sees the same context, grounded in the same source.",
+    title: "Guest Access",
+    description: "Share a room link and anyone can join without signing up. Guests can read and send messages — only document owners manage uploads and settings.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-primary" aria-hidden="true">
         <path d="M18 18.72a9.094 9.094 0 003.741-.479L23 19.5l-.636-2.023A9.091 9.091 0 0021 13.636M15 5.5a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM4.5 13.636a9.094 9.094 0 003.741.479M7.5 14.5a4.5 4.5 0 10-9 0 4.5 4.5 0 009 0z" strokeLinecap="round" strokeLinejoin="round" />
@@ -54,11 +72,11 @@ export default function Features() {
           </div>
         </Reveal>
 
-        <div className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => (
-            <Reveal key={feature.title} delay={100 + i * 100}>
-              <div className="flex flex-col gap-4 bg-surface p-8 h-full">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-muted/50">
+            <Reveal key={feature.title} delay={100 + i * 80}>
+              <div className="group flex flex-col gap-4 bg-surface p-8 h-full transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-muted/50 transition-colors duration-300 group-hover:bg-primary-muted">
                   {feature.icon}
                 </span>
                 <h3 className="text-lg font-medium text-ink">{feature.title}</h3>

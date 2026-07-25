@@ -31,8 +31,9 @@ export default function Header() {
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="text-lg font-semibold tracking-tight text-ink"
+          className="flex items-center gap-2 text-lg font-semibold tracking-tight text-ink"
         >
+          <img src="/logo.svg" alt="" className="h-6 w-6" />
           RAGify
         </Link>
 
@@ -41,6 +42,7 @@ export default function Header() {
           className="flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:text-ink sm:hidden"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
         >
           <svg
             viewBox="0 0 24 24"
@@ -80,7 +82,7 @@ export default function Header() {
       </nav>
 
       {mobileOpen && (
-        <div className="border-t border-border bg-bg px-6 pb-6 pt-4 sm:hidden">
+        <div id="mobile-menu" className="border-t border-border bg-bg px-6 pb-6 pt-4 sm:hidden" role="navigation">
           <div className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <a
