@@ -4,7 +4,8 @@ import PDFParser from "pdf2json";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
-const BATCH_SIZE = 256;
+const RATE_LIMIT_RPM = 100;
+const BATCH_SIZE = RATE_LIMIT_RPM;
 
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -108,7 +109,7 @@ export async function processPdf(documentId: string, pdfUrl: string) {
     for (let i = 0; i < total; i += BATCH_SIZE) {
       const batch = chunks.slice(i, i + BATCH_SIZE);
       let result;
-      while (true) {
+      for (let attempt = 0; attempt < 3; attempt++) {
         try {
           result = await embeddingModel.batchEmbedContents({
             requests: batch.map((content) => ({
@@ -119,18 +120,28 @@ export async function processPdf(documentId: string, pdfUrl: string) {
         } catch (err: any) {
           const match = err.message?.match(/Please retry in (\d+(?:\.\d+)?)s/);
           const delay = match ? Math.ceil(parseFloat(match[1]) * 1000) + 1000 : 5000;
-          console.warn(`Rate limited, retrying in ${delay}ms...`);
-          await sleep(delay);
+          if (attempt < 2) {
+            console.warn(`Rate limited, retrying in ${delay}ms...`);
+            await sleep(delay);
+          } else {
+            throw err;
+          }
         }
       }
       await prisma.documentChunk.createMany({
-        data: result.embeddings.map((e: any, idx: number) => ({
+        data: result!.embeddings.map((e: any, idx: number) => ({
           documentId,
           content: batch[idx],
           chunkIndex: i + idx,
           embedding: e.values,
         })),
       });
+
+      if (i + BATCH_SIZE < total) {
+        const waitMs = Math.ceil((batch.length / RATE_LIMIT_RPM) * 60000);
+        console.warn(`Rate limit: pacing ${waitMs}ms before next batch...`);
+        await sleep(waitMs);
+      }
     }
 
     await prisma.document.update({
