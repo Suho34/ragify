@@ -33,6 +33,7 @@
     "@streamdown/math": "^1.0.2",
     "@streamdown/mermaid": "^1.0.2",
     "@uploadthing/react": "^7.3.3",
+    "@vercel/functions": "^3.7.6",
     "ai": "^7.0.35",
     "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
