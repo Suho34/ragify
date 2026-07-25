@@ -1,4 +1,5 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
+import { waitUntil } from "@vercel/functions";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { processPdf } from "@/lib/process-pdf";
@@ -25,13 +26,15 @@ export const ourFileRouter = {
         },
       });
 
-      processPdf(doc.id, file.ufsUrl).catch(async (err) => {
-        console.error("PDF processing failed:", err);
-        await prisma.document.update({
-          where: { id: doc.id },
-          data: { status: "error" },
-        });
-      });
+      waitUntil(
+        processPdf(doc.id, file.ufsUrl).catch(async (err) => {
+          console.error("PDF processing failed:", err);
+          await prisma.document.update({
+            where: { id: doc.id },
+            data: { status: "error" },
+          });
+        })
+      );
     }),
 } satisfies FileRouter;
 
