@@ -122,21 +122,21 @@ function ChatRoom({
   const senderNamesRef = useRef<Record<string, string>>(initialSenderNames);
   const currentUserName = session?.user?.name ?? "You";
   const isBusy = status === "streaming" || status === "submitted";
-  const seenDbIds = useRef<Set<string>>(new Set(initialMessages.map((m: any) => m.id)));
+  const seenContent = useRef<Set<string>>(
+    new Set(initialMessages.map((m: any) => `${m.role}:${getText(m)}`))
+  );
 
   useEventListener((event: any) => {
     if (event?.type === "new-message") {
       const msg = event.message;
-      if (!msg?.id || seenDbIds.current.has(msg.id)) return;
-      seenDbIds.current.add(msg.id);
+      if (!msg?.id) return;
+      const fp = `${msg.role}:${msg.content}`;
+      if (seenContent.current.has(fp)) return;
+      seenContent.current.add(fp);
       if (msg.userName) {
         senderNamesRef.current[msg.id] = msg.userName;
       }
-      setMessages((prev) => {
-        const exists = prev.some((m: any) => m.id === msg.id);
-        if (exists) return prev;
-        return [...prev, { id: msg.id, role: msg.role, parts: [{ type: "text", text: msg.content }] }];
-      });
+      setMessages((prev) => [...prev, { id: msg.id, role: msg.role, parts: [{ type: "text", text: msg.content }] }]);
     }
   });
 
@@ -150,14 +150,10 @@ function ChatRoom({
         const data = await res.json();
         if (!data?.messages) return;
         for (const msg of data.messages) {
-          if (!seenDbIds.current.has(msg.id)) {
-            seenDbIds.current.add(msg.id);
-            setMessages((prev) => {
-              const exists = prev.some((m: any) => m.id === msg.id);
-              if (exists) return prev;
-              return [...prev, { id: msg.id, role: msg.role, parts: [{ type: "text", text: msg.content }] }];
-            });
-          }
+          const fp = `${msg.role}:${msg.content}`;
+          if (seenContent.current.has(fp)) continue;
+          seenContent.current.add(fp);
+          setMessages((prev) => [...prev, { id: msg.id, role: msg.role, parts: [{ type: "text", text: msg.content }] }]);
         }
       } catch {}
     }, 4000);
