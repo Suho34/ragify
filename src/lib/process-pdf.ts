@@ -52,6 +52,14 @@ function sanitizeText(text: string): string {
   return text.replace(/\0/g, "");
 }
 
+function safeDecode(text: string): string {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
 function extractPdfText(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
     const parser = new PDFParser();
@@ -61,7 +69,7 @@ function extractPdfText(buffer: Buffer): Promise<string> {
     parser.on("pdfParser_dataReady", (pdfData) => {
       const text = pdfData.Pages.map((page) =>
         page.Texts.map((t) =>
-          decodeURIComponent(t.R.map((r) => r.T).join(" "))
+          safeDecode(t.R.map((r) => r.T).join(" "))
         ).join(" ")
       ).join("\n\n");
       resolve(text);
