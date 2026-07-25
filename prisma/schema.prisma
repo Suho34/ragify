@@ -16,6 +16,9 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  documents     Document[]
+  chatRooms     ChatRoom[]
+  chatMessages  ChatMessage[]
 
   @@unique([email])
   @@map("user")
@@ -67,4 +70,80 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Document {
+  id        String          @id @default(cuid())
+  userId    String
+  name      String
+  url       String
+  status    String          @default("uploading")
+  chunksTotal Int?
+  chunksProcessed Int?
+  wordCount Int?
+  estimatedReadingTime Int?
+  fileSize  Int?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatRooms ChatRoomDocument[]
+  chunks    DocumentChunk[]
+
+  @@index([userId])
+  @@map("document")
+}
+
+model ChatRoom {
+  id        String      @id @default(cuid())
+  userId    String
+  name      String?
+  documentId String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents ChatRoomDocument[]
+  messages  ChatMessage[]
+
+  @@index([userId])
+  @@map("chat_room")
+}
+
+model ChatRoomDocument {
+  chatRoomId String
+  documentId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@id([chatRoomId, documentId])
+  @@index([documentId])
+  @@map("chat_room_document")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String?
+  guestId   String?
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([roomId])
+  @@map("chat_message")
+}
+
+model DocumentChunk {
+  id          String   @id @default(cuid())
+  documentId  String
+  content     String
+  chunkIndex  Int
+  embedding   Json?
+  createdAt   DateTime @default(now())
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([chunkIndex])
+  @@map("document_chunk")
 }
