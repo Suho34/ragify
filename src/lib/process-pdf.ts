@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import PDFParser from "pdf2json";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
@@ -51,15 +52,22 @@ function sanitizeText(text: string): string {
   return text.replace(/\0/g, "");
 }
 
-async function setupPdfjs() {
-  const { PDFParse } = await import("pdf-parse");
-  const workerModule = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  Object.defineProperty(pdfjs.PDFWorker, "_setupFakeWorkerGlobal", {
-    get: () => Promise.resolve(workerModule.WorkerMessageHandler),
-    configurable: true,
+function extractPdfText(buffer: Buffer): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const parser = new PDFParser();
+    parser.on("pdfParser_dataError", (errData: any) =>
+      reject(errData?.parserError ?? new Error("PDF parse failed"))
+    );
+    parser.on("pdfParser_dataReady", (pdfData) => {
+      const text = pdfData.Pages.map((page) =>
+        page.Texts.map((t) =>
+          decodeURIComponent(t.R.map((r) => r.T).join(" "))
+        ).join(" ")
+      ).join("\n\n");
+      resolve(text);
+    });
+    parser.parseBuffer(buffer);
   });
-  return PDFParse;
 }
 
 export async function processPdf(documentId: string, pdfUrl: string) {
@@ -68,12 +76,7 @@ export async function processPdf(documentId: string, pdfUrl: string) {
     if (!response.ok) throw new Error(`Failed to fetch PDF: ${response.status}`);
     const pdfBuffer = Buffer.from(await response.arrayBuffer());
 
-    const PDFParse = await setupPdfjs();
-    const parser = new PDFParse({ data: pdfBuffer });
-    const textResult = await parser.getText();
-    await parser.destroy();
-
-    const text = sanitizeText(textResult.text);
+    const text = sanitizeText(await extractPdfText(pdfBuffer));
     if (!text || text.trim().length === 0) {
       throw new Error("No text could be extracted from the PDF");
     }
