@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
@@ -8,8 +9,22 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "RAGify",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            description:
+              "Upload documents, ask questions with RAG-accurate answers, and share chat rooms with friends.",
+          }),
+        }}
+      />
       <Header />
-      <main>
+      <main id="main-content">
         <Hero />
         <Features />
         <HowItWorks />
@@ -22,12 +37,12 @@ export default function Home() {
             <p className="mt-4 text-muted">
               Upload your first document and start a chat room in seconds.
             </p>
-            <a
+            <Link
               href="/login"
               className="mt-8 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-sm font-medium text-black transition-all duration-200 ease-out hover:bg-primary-hover hover:scale-[1.02]"
             >
               Try it now
-            </a>
+            </Link>
           </div>
         </section>
         <Footer />
