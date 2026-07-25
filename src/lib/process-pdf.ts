@@ -4,7 +4,7 @@ import PDFParser from "pdf2json";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 256;
 
 async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -14,7 +14,7 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-function chunkText(text: string, targetTokens = 500, overlapTokens = 50): string[] {
+function chunkText(text: string, targetTokens = 2000, overlapTokens = 100): string[] {
   const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
   const chunks: string[] = [];
   let current: string[] = [];
@@ -100,13 +100,11 @@ export async function processPdf(documentId: string, pdfUrl: string) {
       data: {
         status: "processing",
         chunksTotal: total,
-        chunksProcessed: 0,
         wordCount: words,
         estimatedReadingTime: readingTime,
       },
     });
 
-    let completed = 0;
     for (let i = 0; i < total; i += BATCH_SIZE) {
       const batch = chunks.slice(i, i + BATCH_SIZE);
       let result;
@@ -132,11 +130,6 @@ export async function processPdf(documentId: string, pdfUrl: string) {
           chunkIndex: i + idx,
           embedding: e.values,
         })),
-      });
-      completed += batch.length;
-      await prisma.document.update({
-        where: { id: documentId },
-        data: { chunksProcessed: completed },
       });
     }
 
