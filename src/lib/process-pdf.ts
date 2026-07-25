@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { embedMany } from "ai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import PDFParser from "pdf2json";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
-const RATE_LIMIT_RPM = 100;
-const BATCH_SIZE = RATE_LIMIT_RPM;
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
-async function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+const embeddingModel = openrouter.embedding("nvidia/nemotron-3-embed-1b:free");
+const BATCH_SIZE = 256;
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -108,40 +107,18 @@ export async function processPdf(documentId: string, pdfUrl: string) {
 
     for (let i = 0; i < total; i += BATCH_SIZE) {
       const batch = chunks.slice(i, i + BATCH_SIZE);
-      let result;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          result = await embeddingModel.batchEmbedContents({
-            requests: batch.map((content) => ({
-              content: { role: "user", parts: [{ text: content }] },
-            })),
-          });
-          break;
-        } catch (err: any) {
-          const match = err.message?.match(/Please retry in (\d+(?:\.\d+)?)s/);
-          const delay = match ? Math.ceil(parseFloat(match[1]) * 1000) + 1000 : 5000;
-          if (attempt < 2) {
-            console.warn(`Rate limited, retrying in ${delay}ms...`);
-            await sleep(delay);
-          } else {
-            throw err;
-          }
-        }
-      }
+      const { embeddings } = await embedMany({
+        model: embeddingModel,
+        values: batch,
+      });
       await prisma.documentChunk.createMany({
-        data: result!.embeddings.map((e: any, idx: number) => ({
+        data: embeddings.map((e, idx) => ({
           documentId,
           content: batch[idx],
           chunkIndex: i + idx,
-          embedding: e.values,
+          embedding: e,
         })),
       });
-
-      if (i + BATCH_SIZE < total) {
-        const waitMs = Math.ceil((batch.length / RATE_LIMIT_RPM) * 60000);
-        console.warn(`Rate limit: pacing ${waitMs}ms before next batch...`);
-        await sleep(waitMs);
-      }
     }
 
     await prisma.document.update({

@@ -81,8 +81,9 @@ Open [http://localhost:3000](http://localhost:3000), sign in with Google, upload
 | `BETTER_AUTH_URL`       | Yes      | `http://localhost:3000` (development)        |
 | `BETTER_AUTH_SECRET`    | Yes      | Run `openssl rand -base64 32` to generate    |
 | `UPLOADTHING_TOKEN`     | Yes      | Uploadthing v7 API token                     |
-| `GEMINI_API_KEY`        | Yes      | Google AI Studio API key                     |
-| `LIVEBLOCKS_SECRET_KEY` | Yes      | Liveblocks secret key                        |
+| `GEMINI_API_KEY` | Yes | Google AI Studio API key (for chat model) |
+| `OPENROUTER_API_KEY` | Yes | OpenRouter API key (for embeddings via Nemotron) |
+| `LIVEBLOCKS_SECRET_KEY` | Yes | Liveblocks secret key |
 
 ## Usage
 
@@ -247,7 +248,7 @@ Word count, estimated reading time, file size, processing progress, and all chat
 | Database     | PostgreSQL + Prisma 7 (Supabase)          |
 | Auth         | better-auth (Google OAuth)                |
 | File storage | Uploadthing                               |
-| Embeddings   | Gemini `gemini-embedding-2`               |
+| Embeddings   | NVIDIA Nemotron-3-1B via OpenRouter        |
 | Chat model   | Gemini 2.0 Flash                          |
 | Real-time    | Liveblocks (presence, cursors, broadcast) |
 | Styling      | Tailwind CSS v4                           |
