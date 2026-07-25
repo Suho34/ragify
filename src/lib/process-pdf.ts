@@ -1,0 +1,143 @@
+import { prisma } from "@/lib/prisma";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
+const BATCH_SIZE = 100;
+
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+function chunkText(text: string, targetTokens = 500, overlapTokens = 50): string[] {
+  const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
+  const chunks: string[] = [];
+  let current: string[] = [];
+  let currentTokens = 0;
+
+  for (const para of paragraphs) {
+    const paraTokens = estimateTokens(para);
+
+    if (currentTokens + paraTokens > targetTokens && current.length > 0) {
+      chunks.push(current.join("\n\n"));
+      const overlap: string[] = [];
+      let overlapTokensCount = 0;
+      for (let i = current.length - 1; i >= 0; i--) {
+        const t = estimateTokens(current[i]);
+        if (overlapTokensCount + t > overlapTokens) break;
+        overlap.unshift(current[i]);
+        overlapTokensCount += t;
+      }
+      current = overlap;
+      currentTokens = overlapTokensCount;
+    }
+
+    current.push(para);
+    currentTokens += paraTokens;
+  }
+
+  if (current.length > 0) {
+    chunks.push(current.join("\n\n"));
+  }
+
+  return chunks;
+}
+
+function sanitizeText(text: string): string {
+  return text.replace(/\0/g, "");
+}
+
+async function setupPdfjs() {
+  const { PDFParse } = await import("pdf-parse");
+  const workerModule = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  Object.defineProperty(pdfjs.PDFWorker, "_setupFakeWorkerGlobal", {
+    get: () => Promise.resolve(workerModule.WorkerMessageHandler),
+    configurable: true,
+  });
+  return PDFParse;
+}
+
+export async function processPdf(documentId: string, pdfUrl: string) {
+  try {
+    const response = await fetch(pdfUrl);
+    if (!response.ok) throw new Error(`Failed to fetch PDF: ${response.status}`);
+    const pdfBuffer = Buffer.from(await response.arrayBuffer());
+
+    const PDFParse = await setupPdfjs();
+    const parser = new PDFParse({ data: pdfBuffer });
+    const textResult = await parser.getText();
+    await parser.destroy();
+
+    const text = sanitizeText(textResult.text);
+    if (!text || text.trim().length === 0) {
+      throw new Error("No text could be extracted from the PDF");
+    }
+
+    const chunks = chunkText(text);
+    const total = chunks.length;
+
+    const words = text.split(/\s+/).filter(Boolean).length;
+    const readingTime = Math.max(60, Math.round(words / 200) * 60);
+
+    await prisma.document.update({
+      where: { id: documentId },
+      data: {
+        status: "processing",
+        chunksTotal: total,
+        chunksProcessed: 0,
+        wordCount: words,
+        estimatedReadingTime: readingTime,
+      },
+    });
+
+    let completed = 0;
+    for (let i = 0; i < total; i += BATCH_SIZE) {
+      const batch = chunks.slice(i, i + BATCH_SIZE);
+      let result;
+      while (true) {
+        try {
+          result = await embeddingModel.batchEmbedContents({
+            requests: batch.map((content) => ({
+              content: { role: "user", parts: [{ text: content }] },
+            })),
+          });
+          break;
+        } catch (err: any) {
+          const match = err.message?.match(/Please retry in (\d+(?:\.\d+)?)s/);
+          const delay = match ? Math.ceil(parseFloat(match[1]) * 1000) + 1000 : 5000;
+          console.warn(`Rate limited, retrying in ${delay}ms...`);
+          await sleep(delay);
+        }
+      }
+      await prisma.documentChunk.createMany({
+        data: result.embeddings.map((e: any, idx: number) => ({
+          documentId,
+          content: batch[idx],
+          chunkIndex: i + idx,
+          embedding: e.values,
+        })),
+      });
+      completed += batch.length;
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { chunksProcessed: completed },
+      });
+    }
+
+    await prisma.document.update({
+      where: { id: documentId },
+      data: { status: "ready" },
+    });
+  } catch (err) {
+    await prisma.document.update({
+      where: { id: documentId },
+      data: { status: "error" },
+    });
+    throw err;
+  }
+}
