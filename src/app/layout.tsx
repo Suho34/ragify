@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ragify-beta.vercel.app"),
   title: "RAGify — Chat with your docs, together.",
   description:
     "Upload documents, ask questions with RAG-accurate answers, and share chat rooms with friends. No setup, no complexity.",
@@ -26,15 +27,24 @@ export const metadata: Metadata = {
     title: "RAGify — Chat with your docs, together.",
     description:
       "Upload documents, ask questions with RAG-accurate answers, and share chat rooms with friends.",
-    url: "https://ragify.app",
+    url: "https://ragify-beta.vercel.app",
     siteName: "RAGify",
     type: "website",
+    images: [
+      {
+        url: "/logo.svg",
+        width: 40,
+        height: 40,
+        alt: "RAGify logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "RAGify — Chat with your docs, together.",
     description:
       "Upload documents, ask questions with RAG-accurate answers, and share chat rooms with friends.",
+    images: ["/logo.svg"],
   },
 };
 
@@ -44,12 +54,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable}`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="min-h-svh bg-bg font-sans antialiased">
-        <a href="#main-content" className="skip-link">Skip to content</a>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         {children}
       </body>

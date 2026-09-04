@@ -26,7 +26,7 @@ RAGify is a full-stack SaaS application that combines RAG-powered document Q&A w
 
 ## Features
 
-- **RAG pipeline** — documents are chunked and embedded with `gemini-embedding-2`. Every question runs semantic search against the top-4 chunks, then streams a response from Gemini 2.0 Flash. Answers are grounded in your document, not generic LLM output.
+- **RAG pipeline** — documents are chunked and embedded with OpenRouter's `nvidia/nemotron-3-embed-1b:free`. Every question runs semantic search against the top-4 chunks, then streams a response from Google's `gemini-3.1-flash-lite`. Answers are grounded in your document, not generic LLM output.
 - **Cross-document chat rooms** — link multiple documents to a single chat room. Questions run RAG across all linked documents, surfacing the most relevant chunks from each source.
 - **Real-time collaboration** — built on Liveblocks for presence avatars, live cursors, and message broadcasting. A 4-second polling fallback ensures no messages are missed when connections drop.
 - **Guest access** — share an invite link. Anyone with the link can join a chat room and ask questions without signing up or seeing the dashboard.
@@ -249,7 +249,7 @@ Word count, estimated reading time, file size, processing progress, and all chat
 | Auth         | better-auth (Google OAuth)                |
 | File storage | Uploadthing                               |
 | Embeddings   | NVIDIA Nemotron-3-1B via OpenRouter        |
-| Chat model   | Gemini 2.0 Flash                          |
+| Chat model   | Google Gemini 3.1 Flash Lite              |
 | Real-time    | Liveblocks (presence, cursors, broadcast) |
 | Styling      | Tailwind CSS v4                           |
 | Testing      | Vitest + Testing Library                  |
