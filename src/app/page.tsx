@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import ProductTour from "@/components/ProductTour";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
@@ -26,6 +27,7 @@ export default function Home() {
       <Header />
       <main id="main-content">
         <Hero />
+        <ProductTour />
         <Features />
         <HowItWorks />
         <FAQ />

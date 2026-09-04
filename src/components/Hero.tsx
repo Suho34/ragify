@@ -35,10 +35,13 @@ export default function Hero() {
               Try it now
             </Link>
             <Link
-              href="#features"
-              className="inline-flex h-12 items-center justify-center rounded-lg border border-border px-8 text-sm font-medium text-ink transition-all duration-200 ease-out hover:bg-surface"
+              href="#tour"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border px-8 text-sm font-medium text-ink transition-all duration-200 ease-out hover:bg-surface hover:border-border/80 hover:text-primary"
             >
-              See how it works
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Watch tour
             </Link>
           </div>
         </Reveal>
